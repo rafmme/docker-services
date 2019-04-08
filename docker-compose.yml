@@ -1,0 +1,61 @@
+version: "3"
+services:
+  # Specifications for the frontend service
+  frontend:
+    build:
+      # Sets the context to the current directory thos docker-compose yml file is placed in
+      context: ./Docker
+
+      # Specfying the Dockerfile for building the frontend image
+      dockerfile: frontend.dockerfile
+    # Specifying  the working directory
+    working_dir: /src/app/frontend
+
+    # Mapping the port 3110 on the host to the port 3110 on the container
+    ports:
+      - "3110:3110"
+    
+    # defining the networking of the container
+    networks:
+      - webnet
+  
+  # Specifications for the backend service
+  backend:
+    build:
+      # Sets the context to the current directory thos docker-compose yml file is placed in
+      context: ./Docker
+      # Specfies the Dockerfile for building the backend image
+      dockerfile: backend.dockerfile
+    
+    # Specifying  the working directory
+    working_dir: /src/app/backend
+
+    # Mapping the port 4000 on the host to the port 4000 on the container
+    ports:
+      - "4000:4000"
+    
+    # defining the networking of the container
+    networks:
+      - webnet
+
+  db:
+    build:
+      context: ./Docker
+
+      # Specfies the Dockerfile for building the DB image
+      dockerfile: db.dockerfile
+
+    # Specifying  the working directory
+    working_dir: /src
+
+    # Mapping the port 6000 on the host to the port 5432 on the container
+    ports:
+      - "6000:5432"
+    networks:
+      - webnet
+      
+
+
+networks:
+  webnet:
+
