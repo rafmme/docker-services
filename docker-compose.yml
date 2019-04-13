@@ -1,5 +1,20 @@
 version: "3"
 services:
+  db:
+    restart: always
+    image: postgres:10.1
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=""
+      - POSTGRES_DB=haven_db
+
+    volumes:
+      - ./haven_db:/var/lib/postgresql/data
+    # Mapping the port 6000 on the host to the port 5432 on the container
+    ports:
+      - "6000:5432"
+    networks:
+      - webnet
   # Specifications for the frontend service
   frontend:
     build:
@@ -8,8 +23,6 @@ services:
 
       # Specfying the Dockerfile for building the frontend image
       dockerfile: frontend.dockerfile
-    # Specifying  the working directory
-    working_dir: /src/app/frontend
 
     # Mapping the port 3110 on the host to the port 3110 on the container
     ports:
@@ -26,34 +39,17 @@ services:
       context: ./Docker
       # Specfies the Dockerfile for building the backend image
       dockerfile: backend.dockerfile
-    
-    # Specifying  the working directory
-    working_dir: /src/app/backend
 
     # Mapping the port 4000 on the host to the port 4000 on the container
     ports:
       - "4000:4000"
+
+    depends_on:
+      - db
     
     # defining the networking of the container
     networks:
       - webnet
-
-  db:
-    build:
-      context: ./Docker
-
-      # Specfies the Dockerfile for building the DB image
-      dockerfile: db.dockerfile
-
-    # Specifying  the working directory
-    working_dir: /src
-
-    # Mapping the port 6000 on the host to the port 5432 on the container
-    ports:
-      - "6000:5432"
-    networks:
-      - webnet
-      
 
 
 networks:
