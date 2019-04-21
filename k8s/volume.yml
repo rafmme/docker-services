@@ -1,9 +1,9 @@
 apiVersion: v1
 kind: PersistentVolume
 metadata:
-  name: postgres-pv
+  name: timmy-lms-postgres-pv
   labels:
-    name: postgres-pv
+    name: timmy-lms-postgres-pv
 spec:
   capacity:
     storage: 1Gi
@@ -11,5 +11,5 @@ spec:
   accessModes:
     - ReadWriteOnce
   gcePersistentDisk:
-    pdName: pg-data-disk
+    pdName: timmy-lms-pg-data-disk
     fsType: ext4

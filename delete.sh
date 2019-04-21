@@ -15,7 +15,7 @@ function delete_resources () {
     display_message $BLUE "DELETING GKE CLUSTER - $CLUSTER_NAME"
 
     gcloud container clusters delete $CLUSTER_NAME --quiet
-    gcloud compute disks delete pg-data-disk --zone $REGION --quiet
+    gcloud compute disks delete timmy-lms-pg-data-disk --zone $REGION --quiet
 
     display_success_message "GKE CLUSTER - $CLUSTER_NAME DELETION COMPLETE"
 }

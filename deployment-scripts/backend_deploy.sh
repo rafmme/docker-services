@@ -13,11 +13,11 @@ function create_backend_deployment () {
     cd k8s
     display_message $BLUE "CREATING BACKEND DEPLOYMENT"
     kubectl create -f ./backend-deployment.yml
-    kubectl expose deployment backend --type=LoadBalancer --port=80 --target-port=4000
+    kubectl expose deployment timmy-lms-backend --type=LoadBalancer --port=80 --target-port=4000
 
-    sleep 70s
-    backend_ip_address=$(kubectl get service backend | grep -E -o "([0-9]{1,3}[\.]){3}[0-9]{1,3}" | sed "1d")
-    kubectl create configmap config-map --from-literal=backend_ip="http://$backend_ip_address/api/v1"
+    sleep 120s
+    backend_ip_address=$(kubectl get service timmy-lms-backend | grep -E -o "([0-9]{1,3}[\.]){3}[0-9]{1,3}" | sed "1d")
+    kubectl create configmap timmy-lms-config-map --from-literal=backend_ip="http://$backend_ip_address/api/v1"
     sleep 25s
 
     display_success_message "BACKEND DEPLOYMENT DONE"

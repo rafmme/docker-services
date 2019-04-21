@@ -6,25 +6,25 @@ metadata:
     kompose.version: 1.17.0 (a74acad)
   creationTimestamp: null
   labels:
-    io.kompose.service: frontend
-  name: frontend
+    io.kompose.service: timmy-lms-frontend
+  name: timmy-lms-frontend
 spec:
-  replicas: 1
+  replicas: 3
   strategy: {}
   template:
     metadata:
       creationTimestamp: null
       labels:
-        io.kompose.service: frontend
+        io.kompose.service: timmy-lms-frontend
     spec:
       containers:
       - image: rafmme/neon_ah_frontend
-        name: frontend
+        name: timmy-lms-frontend
         env:
          - name: BACKEND_IP
            valueFrom:
             configMapKeyRef:
-              name: config-map
+              name: timmy-lms-config-map
               key: backend_ip
         command: ["/bin/sh"]
         args: ["-c", "echo BACKEND_IP=$BACKEND_IP > .env; yarn run heroku-postbuild; yarn run start"]

@@ -19,9 +19,9 @@ function create_db_deployment () {
     kubectl create -f ./volume-claim.yml
     kubectl create -f ./secrets.yml
     kubectl create -f ./postgres-deployment.yml
-    kubectl expose deployment postgres --type=NodePort --port=6000 --target-port=5432
+    kubectl expose deployment timmy-lms-postgres --type=NodePort --port=6000 --target-port=5432
 
-    db_ip_address=$(kubectl get service postgres | grep -E -o "([0-9]{1,3}[\.]){3}[0-9]{1,3}")
+    db_ip_address=$(kubectl get service timmy-lms-postgres | grep -E -o "([0-9]{1,3}[\.]){3}[0-9]{1,3}")
     db_connection_url="postgresql://postgres:''@$db_ip_address:6000/haven_db"
     db_conn_url_hash=$(echo -n $db_connection_url | base64)
 

@@ -13,7 +13,7 @@ function create_frontend_deployment () {
     cd k8s
     display_message $BLUE "CREATING FRONTEND DEPLOYMENT"
     kubectl create -f ./frontend-deployment.yml
-    kubectl expose deployment frontend --type "LoadBalancer" --port 80 --target-port=3110
+    kubectl expose deployment timmy-lms-frontend --type "LoadBalancer" --port 80 --target-port=3110
     display_success_message "FRONTEND DEPLOYMENT DONE"
 }
 

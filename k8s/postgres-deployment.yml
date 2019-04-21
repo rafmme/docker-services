@@ -1,41 +1,41 @@
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
-  name: postgres
+  name: timmy-lms-postgres
   labels:
-    name: database
+    name: timmy-lms-database
 spec:
-  replicas: 1
+  replicas: 2
   template:
     metadata:
       labels:
-        service: postgres
+        service: timmy-lms-postgres
     spec:
       containers:
-      - name: postgres
+      - name: timmy-lms-postgres
         image: postgres:10.5-alpine
         volumeMounts:
-        - name: postgres-volume-mount
+        - name: timmy-lms-postgres-volume-mount
           mountPath: /var/lib/postgresql/data
           subPath: postgres
         env:
         - name: POSTGRES_USER
           valueFrom:
             secretKeyRef:
-              name: postgres-credentials
+              name: timmy-lms-postgres-credentials
               key: user
         - name: POSTGRES_DB
           valueFrom:
             secretKeyRef:
-              name: postgres-credentials
+              name: timmy-lms-postgres-credentials
               key: db_name
         - name: POSTGRES_PASSWORD
           valueFrom:
             secretKeyRef:
-              name: postgres-credentials
+              name: timmy-lms-postgres-credentials
               key: password
       restartPolicy: Always
       volumes:
-      - name: postgres-volume-mount
+      - name: timmy-lms-postgres-volume-mount
         persistentVolumeClaim:
-          claimName: postgres-pvc
+          claimName: timmy-lms-postgres-pvc
