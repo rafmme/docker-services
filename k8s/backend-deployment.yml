@@ -1,0 +1,37 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.cmd: kompose convert
+    kompose.version: 1.17.0 (a74acad)
+  creationTimestamp: null
+  labels:
+    io.kompose.service: backend
+  name: backend
+spec:
+  replicas: 1
+  strategy: {}
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        io.kompose.service: backend
+    spec:
+      containers:
+      - image: rafmme/neon_ah_backend
+        name: backend
+        env:
+         - name: NODE_ENV
+           value: production
+         - name: DATABASE_URL
+           valueFrom:
+            secretKeyRef:
+              name: postgres-credentials
+              key: database_url
+        command: ["/bin/sh"]
+        args: ["-c", "yarn heroku-postbuild; yarn undomigrate; yarn migrate; yarn run seed; yarn run start"]
+        ports:
+        - containerPort: 4000
+        resources: {}
+      restartPolicy: Always
+status: {}

@@ -1,12 +1,17 @@
-# Containerization with Docker & Creating Services with Docker Compose
-Packaging a Node.JS application with back-end, frontend and database services inside containers and using docker-compose to start up the services.
+# Using Containers for Deployment & Kubernetes (k8s) for Containers orchestration
+Containerizing a Node.JS application with back-end, frontend and database services inside Docker containers and using Kubernetes for the containers orchestration i.e handles the automation of deployment, scaling of application, and operations of application containers across clusters.
+![`Image of K8s architecture for this project`](/image/dck-version.jpg)
+
+
+
 
 #### Tools
 1. [`Docker`](https://www.docker.com) Docker is a tool designed to make it easier to create, deploy, and run applications by using containers. Containers allow a developer to package up an application with all of the parts it needs, such as libraries and other dependencies, and ship it all out as one package.
 
-2. Docker Compose - Compose is a tool for defining and running multi-container Docker applications. With Compose, you use a YAML file to configure your application's services. Then, with a single command, you create and start all the services from your configuration.
+2. [`Kubernetes (k8s)`](https://kubernetes.io) - k8s is an open source container management tool hosted by Cloud Native Computing Foundation (CNCF)
 
-## Creating Services with Docker
+
+### How containers work with the application
  - First thing first, We need to make sure we have Docker Engine installed on our computer. To check if Docker is installed, run this command `docker version` on the Terminal. If docker is on the computer, we should see an output like this ![Docker Version](./image/dck-version.png)
  If the `docker version` command gives error, that means docker isn't installed. Visit [https://docs.docker.com/install/](https://docs.docker.com/install/) to get instructions on how to install docker for your specific OS platform.
  For MacOS users, you can install Docker via Homebrew. Follow this [Homebrew Installation Tutorial](https://treehouse.github.io/installation-guides/mac/homebrew) to install Homebrew on your Mac. With Homebrew installed on your Mac, Run `brew cask install docker` on your terminal to install Docker.

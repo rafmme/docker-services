@@ -1,0 +1,35 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.cmd: kompose convert
+    kompose.version: 1.17.0 (a74acad)
+  creationTimestamp: null
+  labels:
+    io.kompose.service: frontend
+  name: frontend
+spec:
+  replicas: 1
+  strategy: {}
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        io.kompose.service: frontend
+    spec:
+      containers:
+      - image: rafmme/neon_ah_frontend
+        name: frontend
+        env:
+         - name: BACKEND_IP
+           valueFrom:
+            configMapKeyRef:
+              name: config-map
+              key: backend_ip
+        command: ["/bin/sh"]
+        args: ["-c", "echo BACKEND_IP=$BACKEND_IP > .env; yarn run heroku-postbuild; yarn run start"]
+        ports:
+        - containerPort: 3110
+        resources: {}
+      restartPolicy: Always
+status: {}

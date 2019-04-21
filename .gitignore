@@ -2,3 +2,5 @@ backend
 frontend
 haven_db
 .DS_Store
+.env
+*.ymle
