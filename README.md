@@ -1,100 +1,54 @@
-# Using Containers for Deployment & Kubernetes (k8s) for Containers orchestration
-Containerizing a Node.JS application with back-end, frontend and database services inside Docker containers and using Kubernetes for the containers orchestration i.e handles the automation of deployment, scaling of application, and operations of application containers across clusters.
+# Using Containers for Deployment on Tembea
+A container is a standard unit of software that packages up code and all its dependencies so the application runs quickly and reliably from one computing environment to another. A Docker container image is a lightweight, standalone, executable package of software that includes everything needed to run an application: code, runtime, system tools, system libraries and settings.
 
-#### Tools
+Container images become containers at runtime and in the case of Docker containers - images become containers when they run on Docker Engine. Available for both Linux and Windows-based applications, containerized software will always run the same, regardless of the infrastructure. Containers isolate software from its environment and ensure that it works uniformly despite differences for instance between development, staging and production.
+ - `Container image`
+This image will inform how a container is instantiated, determining which software components will run and how. You can also create an image from a container, and share these specifications with someone else, so that an app runs the same way on a developer’s laptop as it would in production.
+
+ - `Container`
+This describes a virtual environment that bundles the application code with all the binaries and libraries that are required to run an application. Since the container includes all of its dependencies, you don’t have to install anything on the host operating system, keeping it separate and pristine.
+
+- `Container orchestration`
+This refers to coordinating behaviors for containers and between containers, such as scheduling, resource management, and load balancing. In complex or dynamic ecosystems, teams will use an orchestration engine to control, manage, and automate this activity. Kubernetes (k8s) is a good Container Orchestration tool and the team uses it via Google's Kubernetes Engine platform.
+
+!['Image'](image/dck-img.png)
+
+
+
+#### Tools & Platforms used
 1. [`Docker`](https://www.docker.com) Docker is a tool designed to make it easier to create, deploy, and run applications by using containers. Containers allow a developer to package up an application with all of the parts it needs, such as libraries and other dependencies, and ship it all out as one package.
-
-2. [`Kubernetes (k8s)`](https://kubernetes.io) - k8s is an open source container management tool hosted by Cloud Native Computing Foundation (CNCF)
+2. CircleCI
+3. Google Cloud Platform
+4. Google Kubernetes Engine
 
 ### How containers work with the application
-   - In order to containerize the application, first thing to be do is to build the docker images for the frontend and backend of the application. With the built Docker images, I can then spin up containers running the images.
-     -  For this project, I deployed the `aws-deploy` branch on the project's git repository. To get started with the building of the docker images, I ran the `cd Docker` command on the terminal to change directory to the `Docker` folder because that's where the project's code from GitHub will be cloned to and also it contains the docker files for building the frontend & backend docker images.
-     While in the `Docker` folder, the commands below were used to clone the frontend and backend repositories
-        ```
-         git clone -b aws-deploy https://github.com/rafmme/neon-ah-backend backend
-         git clone -b aws-deploy https://github.com/rafmme/neon-ah-frontend frontend
-        ```
-     <img src="image/project-folders.png" alt="folders" height="600px" width="400px"/>
+   - In order to containerize the application, first thing to be do is to build the docker images for the frontend and backend of the application. With the built Docker images, We can then spin up containers running the images which has everything the apps need to run.
+      - Below is the snapshot for the `Dockerfile` for the frontend part of the Tembea product.
+      ![`Frontend Dockerfile`](image/tembea-frontend-dcf.png)
+         - As seen in the `Frontend's Dockerfile` snapshot, The team makes use of multi-stage builds feature in Docker to enable the creation of a smaller container image for the frontend with better caching and smaller security footprintimage on. For the first stage of the build, using the `FROM` directive, the team uses `node:8-alpine` as the base image for the first build since the project is written in Node.JS/JavaScript
+         - Next directive is the `LABEL` which was used to specify the application name for the image. The `LABEL application` line isn't required to make a working Docker image but it's good practice to include it.
+         - `ARG` - The ARG directive was used to set ENV values during the build of the Docker image
+         - `ENV` - The ENV directive was used to set environment variables inside the image. In the `Dockerfile`, environment variables `NODE_ENV` & `TERM` was set.
+         - `RUN` - The `RUN` directive runs the given instruction inside the container. First `RUN` directive on `line 8` in the Dockerfile was used to run the `mkdir -p /usr/app` command which will create a nested directory `/usr/app` for the project. The other `RUN` directives runs commands that handles installing yarn package manager globally, angular/cli and other needed tools for the project, removing package-lock.json file, installing project's npm dependencies and building up the project.
+         - `WORKDIR` - The WORKDIR directive is used to set the working directory for any subsequent RUN, COPY, CMD, ENTRYPOINT, or ADD directive. For the Dockerfile, the directory created with the RUN command on line 8 `/usr/app` was set as the working directory for the Docker image.
+         - `COPY` - The COPY directive is used to copy files from the build context into the image.
+         - For the Second stage of the build in the Dockerfile, using the `FROM` directive, the team uses `nginx:1.15.8-alpine` as base image which is to serve the app using the Nginx web server.
+         - The first `COPY` directive in the second stage of the build copies a configuration file for setting up nginx into the nginx config folder inside the image. The second `COPY` directive was used to copy the artifacts in `dist/` from the first build to the default nginx public folder.
+         - The `RUN` directive in the second stage build was used to run a command to remove the default files in the nginx public folder.
 
-      - In the `Docker` folder, there are two Dockerfiles, one for building the docker image for the frontend and the other for the backend. A Dockerfile is a text file with series of commands used to specify directives on how to build docker images. Below is the snapshot for the `frontend.dockerfile` for the frontend part of the project.
-      ![`Frontend Dockerfile`](image/frnt-dcf.png)
-         - As seen in the `frontend.dockerfile` snapshot, I started by importing the base image I'll be building the frontend docker image on. Using the `FROM` directive, I imported the Node.JS `node:10.15.3-alpine`  from the Docker hub image which will serve as the base image for the project since the project was built using Node.JS.
-         - Next directive in the `frontend.dockerfile` is the `LABEL` which was used to specify the maintainer for the image. The `LABEL maintainer` line isn't required to make a working Docker image but it's good practice to include it.
-         - `WORKDIR` - The `WORKDIR` directive is used to set the working directory for any subsequent `RUN, COPY, CMD, ENTRYPOINT, or ADD` directive. For the frontend image, `/src/app/frontend` was set as the working directory.
-         - `COPY` - The `COPY` directive is used to copy files from the build context into the image. COPY line in the dockerfile was used to copy the frontend sorce code in the `frontend` folder that was cloned from GitHub into the working directory `/src/app/frontend`.
-         - `RUN` - The RUN directive runs the given instruction inside the container. I made use of the RUN directive to run `yarn install` to install the NPM dependencies for the project and `yarn run heroku-postbuild` for bundling the project with Webpack for production.
-         - `EXPOSE` - The EXPOSE directive indicates to Docker that the container will have a process listening on the specified PORT. I used the EXPOSE directive to open up the port `3110` on the container where the frontend project server is running on.
-         - `ENTRYPOINT` - Entrypoint allows us set an executable to be run where the container starts. In the `frontend.dockerfile`, the ENTRYPOINT directive was used to run the project's `yarn start` command which starts up the frontend server on port 3110.
 
-      - Below is the snapshot for the `backend.dockerfile` for the backend part of the project.
-      ![`Backend Dockerfile`](image/bck-dcf.png)
-         - As shown in the `backend.dockerfile` snapshot, I started by importing the base image I'll be building the backend docker image on. Using the `FROM` directive, I imported the Node.JS `node:10.15.3-alpine`  from the Docker hub image which will serve as the base image for the project since the project was built using Node.JS.
-         - Next directive in the `backend.dockerfile` is the `LABEL` which was used to specify the maintainer for the image. The `LABEL maintainer` line isn't required to make a working Docker image but it's good practice to include it.
-         - `ENV` - The ENV directive was used to set environment variables inside the image. In the `backend.dockerfile`, ENV was used to set an environment variable `NODE_ENV=production`.
-         - `WORKDIR` - The `WORKDIR` directive is used to set the working directory for any subsequent `RUN, COPY, CMD, ENTRYPOINT, or ADD` directive. For the backend image, `/src/app/backend` was set as the working directory.
-         - `COPY` - The `COPY` directive is used to copy files from the build context into the image. COPY line in the dockerfile was used to copy the backend sorce code in the `backend` folder that was cloned from GitHub into the working directory `/src/app/backend`.
-         - `RUN` - The RUN directive runs the given instruction inside the container. I made use of the RUN directive to run `yarn install` to install the NPM dependencies for the project and `yarn run heroku-postbuild` for transipiling the project written with JS ES6 to ES5 for production.
-         - `EXPOSE` - The EXPOSE directive indicates to Docker that the container will have a process listening on the specified PORT. I used the EXPOSE directive to open up the port `4000` on the container where the backend project server is running on.
-         - `ENTRYPOINT` - Entrypoint allows us set an executable to be run where the container starts. In the `backend.dockerfile`, the ENTRYPOINT directive was used to run the project's `yarn start` command which starts up the backend server on port 4000.
+         ----------
 
-      - With the Dockerfiles created, the frontend & backend docker images can be built from their respective docker files by running the commands below inside the `Docker` directory.
-         - The docker command below was used to build the docker image for the frontend using the `frontend.dockerfile` as stated with the `-f` file flag in the command which takes the path of the Dockerfile. The `-t` tag flag was used to tag/give name to the docker image being built
-         ```
-            docker build -t rafmme/neon_ah_frontend -f ./frontend.dockerfile  .
-         ```
-         - The docker command below was used to build the docker image for the backend using the `backend.dockerfile` as stated with the `-f` file flag in the command which takes the path of the Dockerfile. The `-t` tag flag was used to tag/give name to the docker image being built
-         ```
-            docker build -t rafmme/neon_ah_backend -f ./backend.dockerfile  .
-         ```
-      - After the successful completion of the images build, the images were pushed to the Docker hub repository with the commands below
-         ```
-            export DOCKER_ID_USER="rafmme"
-            docker login
-            docker push $DOCKER_ID_USER/neon_ah_frontend:latest
-            docker push $DOCKER_ID_USER/neon_ah_backend:latest
-         ```
-         ![`Docker hub images repo`](/image/dck-hub.png)
+      - Below is the snapshot for the `Dockerfile` for the backend part of the Tembea product.
+      ![`Backend Dockerfile`](image/tembea-dcf.png)
+         - As seen in the `Backend's Dockerfile` snapshot, using the `FROM` directive, the team uses `node:10-alpine` image as the base image for the first build since the project is written in Node.JS/JavaScript
+         - Next directive is the `LABEL` which was used to specify the application name for the image. The `LABEL application` line isn't required to make a working Docker image but it's good practice to include it.
+         - `ENV` - The ENV directive was used to set environment variables inside the image. In the `Dockerfile`, environment variables `NODE_ENV` & `TERM` was set.
+         - `RUN` - The `RUN` directive runs the given instruction inside the container. First `RUN` directive on `line 7` in the Dockerfile was used to run the `mkdir -p /usr/app` command which will create a nested directory `/usr/app` for the project. The other `RUN` directives runs commands that handles installing yarn package manager globally, removing package-lock.json file, installing project's npm dependencies using yarn and building up the project.
+         - `WORKDIR` - The WORKDIR directive is used to set the working directory for any subsequent RUN, COPY, CMD, ENTRYPOINT, or ADD directive. For the Dockerfile, the directory created with the RUN command on line 7 `/usr/app` was set as the working directory for the Docker image.
+         - `COPY` - The COPY directive was used to copy files from the build context into the image. The team used the `COPY` directive to copy files like package.json, yarn.lock, .babelrc, the project codes in the `src/` directory into the image working directory `/usr/app`.
 
--------------------------------------------------------------------------------------------------------------------------
+         ---------
 
-- With the frontend & backend docker images built & pushed to the Docker hub repository, the next step was to create a k8s cluster on GCP's Google Kubernetes Engine (GKE) that will handle the deployment, scaling and maintaining the containerized application. Bash Scripts was used to automate the whole process.
-   ```
-            export PROJECT_NAME="neon-ah-1555609505"
-            export CLUSTER_NAME="neon-ah-cluster"
-            export COMPUTE_ZONE="europe-west2"
-            export REGION="europe-west2-a"
-            export MACHINE_TYPE="g1-small"
-            export NUM_OF_NODES=1
-            export DISK_CAPACITY=2GB
-   ```
-   -  The above environment variables where exported via the terminal so that the bash scripts can access the variables for configuring the GCP project's name, the cluster name, compute zone, region, machine type, number of nodes in the cluster, disk capacity and the billing account associated with the project.
-   -------------------------------------------------------------------------------------------------------------------  
-   
-   ![`Setup-GKE Script`](image/setup-jke.png)
-   -  The `setup_gke` script contains functions that handles running commands that configures the GCP project, creates the GKE cluster and GCP Disk storage for persisting the application's data.
-   --------------------------------------------------------------------------------------------------------------------
-
-   ![](image/db-dpy.png)
-   ![`DB deploy Script`](image/db-script.png)
-   -  The `db_deploy` script handles the deployment of the container running the db for the application and exposing it to external client on the k8s cluster using the `kubectl` cli tool with the state described in the `postgres-deployment.yml`  file.
-
-   --------------------------------------------------------------------------------------------------------------------
-   ![](image/bck-dpy.png)
-   ![`Backend deploy Script`](image/bck-script.png)
-   -  The `backend_deploy` script handles the deployment of the container running the backend docker image for the application and exposing it to external client using LoadBalancer on the k8s cluster using the `kubectl` cli tool with the state described in the `backend-deployment.yml`  file.
-
-   --------------------------------------------------------------------------------------------------------------------
-
-   ![](image/frnt-dpy.png)
-   ![`Frontend deploy Script`](image/frnt-script.png)
-   -  The `frontend_deploy` script handles the deployment of the container running the frontend docker image for the application and exposing it to external client using LoadBalancer on the k8s cluster using the `kubectl` cli tool with the state described in the `frontend-deployment.yml`  file.
-
-   --------------------------------------------------------------------------------------------------------------------
-
-  ## How To start the Deployment process
-To start the deployment process, while on the terminal `cd` to this project's directory and run the following commands on the CLI.
-            
-            make deploy
-Also to clean up and delete resources created, run the following commands on the CLI.
-            
-            make destroy
+   - The team uses Circle CI for continuous integration and delivery, If the developers pushes new codes, Circle CI runs tests and builds the project, if the build is successful, Docker Images for the product is built and pushed to the `gcr` private repository.
+   For automating the deployment and spinng up containers from the built docker images, the team has scripts that handles the deployment & orchestration of the containers on a Kubernetes (k8s) cluster.
